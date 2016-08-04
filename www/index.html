@@ -21,9 +21,63 @@
     <!-- your app's js -->
     <script src="js/app.js"></script>
     <script src="js/controllers.js"></script>
+
+    <script>
+        // Please get a key from http://developers.Zendrive.com if you don't have one
+        function processStartOfDrive(zendriveDriveStartInfo) {
+          console.log("Detected trip start");
+          cordova.plugins.notification.local.schedule({
+            id: 1,
+            text: "Currently tracking your trip"
+          });
+        }
+        function processEndOfDrive(zendriveDriveInfo) {
+          console.log("Detected trip end");
+          cordova.plugins.notification.local.schedule({
+            id: 2,
+            text: "Trip has ended"
+          });
+        }
+        function processLocationDenied() {
+            alert("Location denied, please enable location services to keep Zendrive working");
+        }
+        function callSetup() {
+            var applicationKey = "QBACZvxnFRs4eowTD6L5iGwrcOm1UANF";
+            var driverId = "4747";
+            var config = new Zendrive.ZendriveConfiguration(applicationKey, driverId);
+            var driverAttributes = new Zendrive.ZendriveDriverAttributes();
+
+            driverAttributes.email = "test-zendrive-sdk@fleetio.com";
+            driverAttributes.group = "18";
+            config.driverAttributes = driverAttributes;
+            config.driveDetectionMode = Zendrive.ZendriveDriveDetectionMode.ZendriveDriveDetectionModeAutoON;
+
+            Zendrive.setup(config, new Zendrive.ZendriveCallback(processStartOfDrive,
+                processEndOfDrive, processLocationDenied), function() {
+                alert("Zendrive Setup done!");
+            },
+            function (error) {
+                alert("Zendrive Setup failed: " + error);
+            });
+        }
+    </script>
+
   </head>
 
-  <body ng-app="starter">
+  <body ng-app="starter" onload="onLoad()">
     <ion-nav-view></ion-nav-view>
+
+    <script type="text/javascript">
+        // Wait for device API libraries to load
+        function onLoad() {
+            console.log("in onload")
+            document.addEventListener("deviceready", onDeviceReady, false);
+        }
+        // device APIs are available
+        function onDeviceReady() {
+            // after app loading completes call setup.
+            callSetup();
+        }
+    </script>
   </body>
 </html>
