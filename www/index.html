@@ -13,14 +13,14 @@
     -->
 
     <!-- ionic/angularjs js -->
-    <script src="lib/ionic/js/ionic.bundle.js"></script>
+    <!-- <script src="lib/ionic/js/ionic.bundle.js"></script> -->
 
     <!-- cordova script (this will be a 404 during development) -->
     <script src="cordova.js"></script>
 
     <!-- your app's js -->
-    <script src="js/app.js"></script>
-    <script src="js/controllers.js"></script>
+    <!-- <script src="js/app.js"></script> -->
+    <!-- <script src="js/controllers.js"></script> -->
 
     <script>
         // Please get a key from http://developers.Zendrive.com if you don't have one
@@ -41,6 +41,49 @@
         function processLocationDenied() {
             alert("Location denied, please enable location services to keep Zendrive working");
         }
+
+        function loadJs() {
+          if(typeof ionic !== 'undefined')
+            return
+
+          var ionicJs = document.createElement("script");
+          ionicJs.type = "text/javascript";
+          ionicJs.src = "lib/ionic/js/ionic.bundle.js";
+          document.body.appendChild(ionicJs);
+
+          ionicJs.onload = function(){
+            if(window.cordova){
+              cordova.plugins.notification.local.schedule({
+                id: 6,
+                text: "Ionic loaded"
+              });
+            }
+            else{
+              console.log("Ionic loaded")
+            }
+
+            var appJs = document.createElement("script");
+            appJs.type = "text/javascript";
+            appJs.src = "js/app.js";
+            document.body.appendChild(appJs);
+
+            appJs.onload = function() {
+              angular.element(document).ready(function() {
+                angular.bootstrap(document, ['starter']);
+
+                if(window.cordova){
+                  cordova.plugins.notification.local.schedule({
+                    id: 7,
+                    text: "Angular loaded"
+                  });
+                }
+              });
+
+              Raven.config('https://e8195b936d6b4b9a884fbba277e47901@app.getsentry.com/91071').install()
+            }
+          }
+        }
+
         function callSetup() {
             var applicationKey = "QBACZvxnFRs4eowTD6L5iGwrcOm1UANF";
             var driverId = "4747";
@@ -52,26 +95,37 @@
             config.driverAttributes = driverAttributes;
             config.driveDetectionMode = Zendrive.ZendriveDriveDetectionMode.ZendriveDriveDetectionModeAutoON;
 
-            Zendrive.setup(config, new Zendrive.ZendriveCallback(processStartOfDrive,
-                processEndOfDrive, processLocationDenied), function() {
-                alert("Zendrive Setup done!");
+            Zendrive.setup(config, new Zendrive.ZendriveCallback(processStartOfDrive, processEndOfDrive, processLocationDenied), function() {
+                // alert("Zendrive Setup done!");
+                cordova.plugins.notification.local.schedule({
+                  id: 4,
+                  text: "ZD Setup Done"
+                });
+                loadJs();
             },
             function (error) {
-                alert("Zendrive Setup failed: " + error);
+                // alert("Zendrive Setup failed: " + error);
+                cordova.plugins.notification.local.schedule({
+                  id: 5,
+                  text: "ZD Setup Failed"  + error
+                });
+                loadJs();
             });
         }
     </script>
 
   </head>
 
-  <body ng-app="starter" onload="onLoad()">
+  <body onload="onLoad()">
     <ion-nav-view></ion-nav-view>
 
     <script type="text/javascript">
         // Wait for device API libraries to load
         function onLoad() {
-            console.log("in onload")
             document.addEventListener("deviceready", onDeviceReady, false);
+            // if(!window.cordova){
+            //   loadJs();
+            // }
         }
         // device APIs are available
         function onDeviceReady() {
